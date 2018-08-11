@@ -1,0 +1,6 @@
+.idea
+*.log
+*.class
+/*.class
+metastore_db/
+target
