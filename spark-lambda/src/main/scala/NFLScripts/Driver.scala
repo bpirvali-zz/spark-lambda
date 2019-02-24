@@ -1,30 +1,51 @@
 package NFLScripts
 
 import org.apache.log4j.{Level, Logger}
+import org.apache.spark.SparkConf
 
 /**
   * @author Behzad Pirvali, 7/16/18
   */
 object Driver {
   lazy val logger = Logger.getLogger(this.getClass)
-  //logger.setLevel(Level.TRACE)
-  //^ no need to set this inline code since we now use Dlog4j.configuration=file:/...
 
-  val spark = SparkHelper.getAndConfigureSparkSession()
+  // spark conf
+  val conf = new SparkConf()
+  conf.set("spark.executor.memory","1g")
+
+  // spark session
+  val spark = SparkHelper.createSparkSession("app-name", "WARN", conf, "local[*]")
 
   def main(args: Array[String]): Unit = {
-    /*
-      We set the apache.log4j logger properties for Spark, this App, etc.. in this App project at:
-      /Users/jack.gudenkauf/projects/spark/spark_cassandra/conf/log4j.properties
-      The log4j.properties file is set in IntelliJ Run\Edit Configurations VM options
-      -Dspark.app.name=SparkAppDir2Kafka2Cassandra -Dspark.master=local[*] -Dspark.serializer=org.apache.spark.serializer.KryoSerializer -Dlog4j.configuration=file:/Users/jack.gudenkauf/projects/spark/spark_cassandra/conf/log4j.properties
-      ^ note that the spark VM settingd (e.g., spark.app.name) are set in our SparkHelper SparkConf()
-     */
-    //  https://databricks.com/blog/2017/04/26/processing-data-in-apache-kafka-with-structured-streaming-in-apache-spark-2-2.html
-    //val spark = SparkHelper.getAndConfigureSparkSession()
-    logger.info(s"SparkAppName(${spark.sparkContext.appName}), spark.version(${spark.version}), SparkSession(${spark})")
+    logger.info(s"SparkAppName(${spark.sparkContext.appName}), spark.version(${spark.version})")
     println(s"SparkAppName(${spark.sparkContext.appName}), spark.version(${spark.version}), SparkSession(${spark})")
-    logger.info(s"streams.awaitAnyTermination()")
+
+    val clusterName="la3_stg_cass"
+    val mapCassClusterParams = Map(
+      "spark.cassandra.connection.host" -> "10.198.58.18,10.198.58.19,10.198.58.20"
+      , "spark.cassandra.auth.username" -> "cassandra"
+      , "spark.cassandra.auth.password" -> "DataStax#1"
+    )
+
+
+    val cassObj =
+      CassandraHelper.Builder()
+        .setSparkSession(spark)
+        .setGlobalConfig(CassandraHelper.mapGlobalParamsDefault)
+        .setClusterConfig(clusterName, CassandraHelper.mapClusterParamsDefault ++ mapCassClusterParams)
+        .build()
+
+    //val dfTables = cassObj.readTable("system_schema", "tables")
+    cassObj.createTempViewForTable("system_schema", "tables", "vs_tables")
+    val sql =
+      """SELECT *
+        |FROM vs_tables
+        |where keyspace_name='nfl_assets'
+        |and type like '%frozen<udt_%>'
+        |and table_name in ('person', 'player')
+        |order by table_name""".stripMargin
+
+    spark.sql("select * from vs_tables where keyspace_name='nfl_assets'").show(1)
   }
 }
 

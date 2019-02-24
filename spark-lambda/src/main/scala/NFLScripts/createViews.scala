@@ -43,28 +43,28 @@ object createViews {
     logical_DC = ("solr-stg-la3-system-traces", "10.198.58.21,10.198.58.22,10.198.58.23")
     spark.setCassandraConf(logical_DC._1, CassandraConnectorConf.ConnectionHostParam.option(logical_DC._2) ++ ReadConf.SplitSizeInMBParam.option(128)
       ++ ReadConf.ConsistencyLevelParam.option(ConsistencyLevel.ONE)  )
-    scala.collection.mutable.Map("cluster" -> logical_DC._1, "spark.cassandra.auth.username" -> "ds_spark_exercises", "spark.cassandra.auth.password" -> cassandraPassword_stg)
+    scala.collection.mutable.Map("cluster" -> logical_DC._1, "spark.cassandra.auth.username" -> "learning/ds_spark_exercises", "spark.cassandra.auth.password" -> cassandraPassword_stg)
   }
 
   //mutable.Map("keyspace" -> "push", "table" -> "push_device")
   lazy val spark_stg_la3: scala.collection.mutable.Map[String,String] = {
     logical_DC = ("spark-stg-la3", "10.198.58.25,10.198.58.26,10.198.58.27")
     spark.setCassandraConf(logical_DC._1, CassandraConnectorConf.ConnectionHostParam.option(logical_DC._2) ++ ReadConf.SplitSizeInMBParam.option(128) )
-    scala.collection.mutable.Map("cluster" -> logical_DC._1, "spark.cassandra.auth.username" -> "ds_spark_exercises", "spark.cassandra.auth.password" -> cassandraPassword_stg)  //  "pushdown" -> "true",
+    scala.collection.mutable.Map("cluster" -> logical_DC._1, "spark.cassandra.auth.username" -> "learning/ds_spark_exercises", "spark.cassandra.auth.password" -> cassandraPassword_stg)  //  "pushdown" -> "true",
   }
 
   //mutable.Map("keyspace" -> "push", "table" -> "push_device")
   lazy val cassandra_stg_la3: scala.collection.mutable.Map[String,String] = {
     logical_DC = ("cassandra-stg-la3", "10.198.58.18,10.198.58.19,10.198.58.20")
     spark.setCassandraConf(logical_DC._1, CassandraConnectorConf.ConnectionHostParam.option(logical_DC._2) ++ ReadConf.SplitSizeInMBParam.option(128) )
-    scala.collection.mutable.Map("cluster" -> logical_DC._1, "spark.cassandra.auth.username" -> "ds_spark_exercises", "spark.cassandra.auth.password" -> cassandraPassword_stg)  // "pushdown" -> "true",
+    scala.collection.mutable.Map("cluster" -> logical_DC._1, "spark.cassandra.auth.username" -> "learning/ds_spark_exercises", "spark.cassandra.auth.password" -> cassandraPassword_stg)  // "pushdown" -> "true",
   }
 
   //mutable.Map("keyspace" -> "nfl_assets", "table" -> "player_stats")
   lazy val solr_stg_la3: scala.collection.mutable.Map[String,String] = {
     logical_DC = ("solr-stg-la3", "10.198.58.21,10.198.58.22,10.198.58.23")
     spark.setCassandraConf(logical_DC._1, CassandraConnectorConf.ConnectionHostParam.option(logical_DC._2) ++ ReadConf.SplitSizeInMBParam.option(128) )
-    scala.collection.mutable.Map("cluster" -> logical_DC._1, "spark.cassandra.auth.username" -> "ds_spark_exercises", "spark.cassandra.auth.password" -> cassandraPassword_stg)
+    scala.collection.mutable.Map("cluster" -> logical_DC._1, "spark.cassandra.auth.username" -> "learning/ds_spark_exercises", "spark.cassandra.auth.password" -> cassandraPassword_stg)
   }
 
 
@@ -73,14 +73,14 @@ object createViews {
     logical_DC = ("solr-prd-la3-system-traces", "10.198.59.20,10.198.59.21,10.198.59.22,10.198.59.23,10.198.59.24")
     spark.setCassandraConf(logical_DC._1, CassandraConnectorConf.ConnectionHostParam.option(logical_DC._2) ++ ReadConf.SplitSizeInMBParam.option(128)
       ++ ReadConf.ConsistencyLevelParam.option(ConsistencyLevel.ONE)  )
-    scala.collection.mutable.Map("cluster" -> logical_DC._1, "spark.cassandra.auth.username" -> "ds_spark_exercises", "spark.cassandra.auth.password" -> cassandraPassword_prd)
+    scala.collection.mutable.Map("cluster" -> logical_DC._1, "spark.cassandra.auth.username" -> "learning/ds_spark_exercises", "spark.cassandra.auth.password" -> cassandraPassword_prd)
   }
   println(s"\nUSE THE spark_<env> logical DC clusters when ever possible to do read/writes instead of the main ring. Mutations will be replicated to cassandra_<env> ring\n")
   //mutable.Map("keyspace" -> "push", "table" -> "push_device")
   lazy val spark_prd_la3: scala.collection.mutable.Map[String,String] = {
     logical_DC = ("spark-prd-la3", "10.198.59.25,10.198.59.26,10.198.59.27")
     spark.setCassandraConf(logical_DC._1, CassandraConnectorConf.ConnectionHostParam.option(logical_DC._2) ++ ReadConf.SplitSizeInMBParam.option(128) )
-    scala.collection.mutable.Map("cluster" -> logical_DC._1, "spark.cassandra.auth.username" -> "ds_spark_exercises", "spark.cassandra.auth.password" -> cassandraPassword_prd) // "pushdown" -> "true",
+    scala.collection.mutable.Map("cluster" -> logical_DC._1, "spark.cassandra.auth.username" -> "learning/ds_spark_exercises", "spark.cassandra.auth.password" -> cassandraPassword_prd) // "pushdown" -> "true",
   }
   /*
     mutable.Map("keyspace" -> "push", "table" -> "push_device")
@@ -91,20 +91,20 @@ object createViews {
   lazy val cassandra_prd_la3: scala.collection.mutable.Map[String,String] = {
     logical_DC = ("cassandra-prd-la3", "10.198.59.12,10.198.59.13,10.198.59.14,10.198.59.15,10.198.59.31,10.198.59.241,10.198.59.242,10.198.59.243,10.198.59.244,10.198.59.245")
     spark.setCassandraConf(logical_DC._1, CassandraConnectorConf.ConnectionHostParam.option(logical_DC._2) ++ ReadConf.SplitSizeInMBParam.option(128) )
-    scala.collection.mutable.Map("cluster" -> logical_DC._1, "spark.cassandra.auth.username" -> "ds_spark_exercises", "spark.cassandra.auth.password" -> cassandraPassword_prd)   // "pushdown" -> "true",
+    scala.collection.mutable.Map("cluster" -> logical_DC._1, "spark.cassandra.auth.username" -> "learning/ds_spark_exercises", "spark.cassandra.auth.password" -> cassandraPassword_prd)   // "pushdown" -> "true",
   }
   //mutable.Map("keyspace" -> "nfl_assets", "table" -> "player_stats")  port 9042
   lazy val solr_prd_la3: scala.collection.mutable.Map[String,String] = {
     // csshx jgudenkauf@10.198.59.20 jgudenkauf@10.198.59.21 jgudenkauf@10.198.59.22 jgudenkauf@10.198.59.23 jgudenkauf@10.198.59.24"
     logical_DC = ("solr-prd-la3", "10.198.59.20,10.198.59.21,10.198.59.22,10.198.59.23,10.198.59.24")
     spark.setCassandraConf(logical_DC._1, CassandraConnectorConf.ConnectionHostParam.option(logical_DC._2) ++ ReadConf.SplitSizeInMBParam.option(128) )
-    scala.collection.mutable.Map("cluster" -> logical_DC._1, "spark.cassandra.auth.username" -> "ds_spark_exercises", "spark.cassandra.auth.password" -> cassandraPassword_prd)
+    scala.collection.mutable.Map("cluster" -> logical_DC._1, "spark.cassandra.auth.username" -> "learning/ds_spark_exercises", "spark.cassandra.auth.password" -> cassandraPassword_prd)
   }
   // localhost cassandra replication = 1
   lazy val localhost: scala.collection.mutable.Map[String,String] = {
     logical_DC = ("localhost", "127.0.0.1")
     spark.setCassandraConf(logical_DC._1, CassandraConnectorConf.ConnectionHostParam.option(logical_DC._2) ++ ReadConf.SplitSizeInMBParam.option(128) )
-    scala.collection.mutable.Map("cluster" -> logical_DC._1, "spark.cassandra.auth.username" -> "ds_spark_exercises")
+    scala.collection.mutable.Map("cluster" -> logical_DC._1, "spark.cassandra.auth.username" -> "learning/ds_spark_exercises")
   }
 
   import spark.implicits._   // needed for df as[tables]

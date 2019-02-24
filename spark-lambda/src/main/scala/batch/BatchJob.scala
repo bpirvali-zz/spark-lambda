@@ -2,41 +2,41 @@ package batch
 
 import java.lang.management.ManagementFactory
 
+import config.Settings
 import domain.Activity
-import org.apache.spark.sql.{SQLContext, SaveMode}
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.sql.{SaveMode, SparkSession}
 
 object BatchJob {
   def main(args: Array[String]): Unit = {
-    // get spark configuration
-    val conf = new SparkConf()
-      .setAppName("Lambda with Spark")
-      .set("spark.executor.memory","1g")
 
-    // Check if running from IDE
-    if ( ManagementFactory.getRuntimeMXBean.getInputArguments.toString.contains("IdeaIC2018") ||
-      ManagementFactory.getRuntimeMXBean.getInputArguments.toString.contains("IntelliJ IDEA")
-    ) {
-      conf.setMaster("local[2]")
+    // create spark session
+    val sparkBuilder = SparkSession
+      .builder()
+      .appName("Lambda with Spark")
+      .config("spark.executor.memory","1g")
+      //.master("local[*]")
+      .enableHiveSupport()
+      //.getOrCreate()
+
+    var sourceFile = "file:///vagrant/data.tsv"
+    val runningLocal=if ( ManagementFactory.getRuntimeMXBean.getInputArguments.toString.contains("IdeaIC2018") ||
+      ManagementFactory.getRuntimeMXBean.getInputArguments.toString.contains("IntelliJ IDEA") ||
+      ManagementFactory.getRuntimeMXBean.getInputArguments.toString.contains("-agentlib:jdwp")
+    ) true else false
+
+    if (runningLocal) {
+      sourceFile = "/Users/behzad.pirvali/Tools/vagrant/boxes/spark-kafka-cassandra-applying-lambda-architecture/vagrant/data.tsv"
+      sparkBuilder.master("local[*]")
     }
 
+    val spark = sparkBuilder.getOrCreate()
+    val sc = spark.sparkContext
+    val sqlContext = spark.sqlContext
 
-    // setup spark context
-    val sc = new  SparkContext(conf)
-    sc.setLogLevel("ERROR")
-    implicit val sqlContext = new SQLContext(sc)
-
-    import org.apache.spark.sql.functions._
-    import sqlContext.implicits._
+    val wlc = Settings.WebLogGen
 
     // initialize input RDD
-    //val sourceFile = "/Users/behzad.pirvali/Tools/vagrant/boxes/spark-kafka-cassandra-applying-lambda-architecture/vagrant"
-    //val sourceFile = "file:///Users/behzad.pirvali/Tools/vagrant/boxes/spark-kafka-cassandra-applying-lambda-architecture/vagrant"
-    val sourceFile = "file:///vagrant/data.tsv"
     val input = sc.textFile(sourceFile)
-
-    // spark action results in job execution
-    //input.foreach(println);
 
     val inputRDD = input.flatMap { line =>
       val record = line.split("\\t")
@@ -47,24 +47,24 @@ object BatchJob {
         None
     }
 
-    // defining a UDF
-    //sqlContext.udf.register("Underexposed", (pageViewCount: Long, purchaseCount: Long) => if (purchaseCount==0) 0 else pageViewCount/purchaseCount)
+    import spark.implicits._
 
     val inputDF = inputRDD.toDF()
-    val df = inputDF.select(
-      add_months(from_unixtime(inputDF("timestamp_hour") / 1000), 1).as("timestamp_hour"),
-      inputDF("referrer"), inputDF("action"), inputDF("prevPage"), inputDF("page"), inputDF("visitor"), inputDF("product")
-    ).cache()
 
-    df.createOrReplaceTempView("activity")
+    // create temp tables
+    inputDF.createOrReplaceTempView("activity")
+
+
 
     val visitorsByProduct = sqlContext.sql(
       """SELECT product, timestamp_hour, COUNT(DISTINCT visitor) as unique_visitors
         | FROM activity
         | GROUP BY product, timestamp_hour
+        | ORDER BY unique_visitors DESC
       """.stripMargin
     )
 
+    //visitorsByProduct.show(10)
     val activityByProduct = sqlContext.sql("""SELECT
                                             product,
                                             timestamp_hour,
@@ -72,11 +72,12 @@ object BatchJob {
                                             sum(case when action = 'add_to_cart' then 1 else 0 end) as add_to_cart_count,
                                             sum(case when action = 'page_view' then 1 else 0 end) as page_view_count
                                             from activity
-                                            group by product, timestamp_hour """).cache()
+                                            group by product, timestamp_hour
+                                            """).cache()
 
-    activityByProduct.write.partitionBy("timestamp_hour").mode(SaveMode.Append).parquet("hdfs://127.0.0.1:9000/lambda/batch1")
 
-    activityByProduct.createOrReplaceTempView("activityByProduct")
+    if (!runningLocal)
+      activityByProduct.write.partitionBy("timestamp_hour").mode(SaveMode.Append).parquet("hdfs://127.0.0.1:9000/lambda/batch1")
 
     visitorsByProduct.foreach( t=>println(t) )
     activityByProduct.foreach( t=>println(t) )

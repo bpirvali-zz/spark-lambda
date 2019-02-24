@@ -13,5 +13,9 @@ object Settings {
     lazy val pages = weblogGen.getInt("pages")
     lazy val visitors = weblogGen.getInt("visitors")
     lazy val filePath = weblogGen.getString("file_path")
+    lazy val destPath = weblogGen.getString("dest_path")
+    lazy val numFiles = weblogGen.getInt("number_of_files")
+    lazy val kafkaTopic = weblogGen.getString("kafka_topic")
+    lazy val hdfsPath = weblogGen.getString("hdfs_path")
   }
-}
+} 

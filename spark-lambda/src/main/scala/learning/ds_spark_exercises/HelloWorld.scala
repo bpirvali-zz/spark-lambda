@@ -1,4 +1,4 @@
-package ds_spark_exercises
+package learning.ds_spark_exercises
 
 import java.lang.management.ManagementFactory
 
